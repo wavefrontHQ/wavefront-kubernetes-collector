@@ -19,7 +19,7 @@ spec:
       serviceAccountName: wavefront-collector
       containers:
       - name: wavefront-collector
-        image: wavefronthq/wavefront-kubernetes-collector:1.3.4
+        image: wavefronthq/wavefront-kubernetes-collector:1.3.0
         imagePullPolicy: IfNotPresent
         command:
         - /wavefront-collector

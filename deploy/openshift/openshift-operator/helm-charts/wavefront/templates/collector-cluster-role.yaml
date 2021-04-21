@@ -21,17 +21,65 @@ rules:
   - nodes
   - nodes/stats
   - pods
+  - replicationcontrollers
+  - secrets
   - services
   verbs:
   - get
   - list
   - watch
 - apiGroups:
-  - extensions
+  - ""
   resources:
+  - configmaps
+  verbs:
+  - get
+  - update
+  - create
+  - list
+  - watch
+
+{{- if .Values.collector.kubernetesState }}
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
   - deployments
+  - statefulsets
+  - replicasets
   verbs:
   - get
   - list
   - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - get
+  - list
+  - watch
+{{- end }}
+- nonResourceURLs: ["/metrics"]
+  verbs:
+  - get
+{{- if .Values.tkgi.psp.enabled }}
+- apiGroups:
+  - policy
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+  resourceNames:
+  - pks-privileged
+{{- end }}
 {{- end }}
