@@ -194,6 +194,9 @@ else
 	make delete-images-kind
 endif
 
+delete-images-and-dogs:
+	# jk, dogs are cool
+
 proxy-test: token-check
 ifeq ($(K8S_ENV), GKE)
 	@(cd $(KUSTOMIZE_DIR) && ./test.sh nimba $(WAVEFRONT_API_KEY) $(VERSION) "us.gcr.io\/$(GCP_PROJECT)")
