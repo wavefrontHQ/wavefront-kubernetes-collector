@@ -196,6 +196,7 @@ endif
 
 delete-images-and-dogs:
 	# jk, dogs are cool
+	# but wait, what if I want to make edits?
 
 proxy-test: token-check
 ifeq ($(K8S_ENV), GKE)
