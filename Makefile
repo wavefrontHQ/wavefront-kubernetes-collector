@@ -206,5 +206,7 @@ deploy-test: token-check k8s-env clean-deployment deploy-targets push-images pro
 
 #Testing code, configuration and deployment changes
 integration-test: token-check k8s-env clean-deployment deploy-targets build tests containers delete-images push-images proxy-test
+	# Is it going to be hard to keep track of changes?
+	# Probably, until we get to `mob done` and have all of them dumped on us
 
 .PHONY: all fmt container clean release
