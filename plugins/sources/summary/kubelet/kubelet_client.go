@@ -27,6 +27,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/apimachinery/pkg/types"
 	"net"
 	"net/http"
 	"net/url"
@@ -180,6 +181,27 @@ func (kc *KubeletClient) GetSummary(host Host) (*stats.Summary, error) {
 
 func (kc *KubeletClient) GetPods(host Host) (*v1.PodList, error) {
 	u := kc.getUrl(host, "/pods/")
+
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	pods := &v1.PodList{}
+	client := kc.client
+	if client == nil {
+		client = http.DefaultClient
+	}
+	err = kc.postRequestAndGetValue(client, req, pods)
+
+	return pods, err
+}
+
+func (kc *KubeletClient) GetCAdvisorMetrics(host Host, nodeName types.NodeName) (*v1.PodList, error) {
+	u := kc.getUrl(host, fmt.Sprintf("/api/v1/nodes/%s/proxy/metrics/cadvisor", nodeName))
+	//u := kc.getUrl(host, "/proxy/metrics/cadvisor")
+
+	log.Info("@@@@@ Here's the URL when we try to do cadvisor stuff")
+	log.Info(u)
 
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {

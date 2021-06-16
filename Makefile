@@ -198,7 +198,7 @@ proxy-test: token-check
 ifeq ($(K8S_ENV), GKE)
 	@(cd $(KUSTOMIZE_DIR) && ./test.sh nimba $(WAVEFRONT_API_KEY) $(VERSION) "us.gcr.io\/$(GCP_PROJECT)")
 else
-	@(cd $(KUSTOMIZE_DIR) && ./test.sh nimba $(WAVEFRONT_API_KEY) $(VERSION))
+	(cd $(KUSTOMIZE_DIR) && ./test.sh nimba $(WAVEFRONT_API_KEY) $(VERSION))
 endif
 
 #Testing deployment and configuration changes, no code changes

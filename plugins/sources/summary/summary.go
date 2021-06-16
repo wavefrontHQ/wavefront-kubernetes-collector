@@ -22,6 +22,7 @@ package summary
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 	"time"
 
 	gm "github.com/rcrowley/go-metrics"
@@ -110,6 +111,14 @@ func (src *summaryMetricsSource) ScrapeMetrics() (*DataBatch, error) {
 	}
 	src.addCompletedPodMetricSets(result, podList)
 
+	nodeName := types.NodeName("kind-control-plane")
+	advisorMetrics, err := src.kubeletClient.GetCAdvisorMetrics(src.node.Host, nodeName)
+
+	log.Infof("@@@@@ Advisor metrics: %s", advisorMetrics)
+
+	// here's what we're looking for:
+	// container_cpu_cfs_throttled_seconds_total
+	// or container_cpu_cfs_throttled_periods_total
 	return result, nil
 }
 
