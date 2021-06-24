@@ -110,9 +110,7 @@ ifneq ($(OVERRIDE_IMAGE_NAME),)
 endif
 
 clean:
-	@rm -f $(OUT_DIR)/$(ARCH)/$(BINARY_NAME)
-	@rm -f $(OUT_DIR)/$(ARCH)/$(BINARY_NAME)-test
-	@rm -f $(OUT_DIR)/$(ARCH)/test-proxy
+	@./hack/make/clean.sh $(OUT_DIR) $(ARCH) $(BINARY_NAME)
 
 deploy-targets:
 	@(cd $(DEPLOY_DIR) && ./deploy-targets.sh)

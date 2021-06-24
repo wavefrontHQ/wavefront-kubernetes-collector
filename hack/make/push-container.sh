@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-source hack/make/script-tools.sh
+source hack/make/_script-tools.sh
 
 function print_usage_and_exit() {
     red "Failure: $1"
