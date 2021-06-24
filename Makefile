@@ -181,11 +181,7 @@ push-to-kind:
 	@kind load docker-image $(PREFIX)/test-proxy:$(VERSION) --name kind
 
 delete-images-kind:
-	@docker exec -it kind-control-plane crictl rmi $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) || true
-	@kind load docker-image $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) --name kind
-
-	@docker exec -it kind-control-plane crictl rmi $(PREFIX)/test-proxy:$(VERSION) || true
-	@kind load docker-image $(PREFIX)/test-proxy:$(VERSION) --name kind
+	@./hack/make/delete-images-kind.sh $(PREFIX) $(DOCKER_IMAGE) $(VERSION)
 
 push-images:
 ifeq ($(K8S_ENV), GKE)

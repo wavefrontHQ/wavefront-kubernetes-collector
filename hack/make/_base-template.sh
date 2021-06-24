@@ -7,11 +7,16 @@ function print_usage_and_exit() {
     exit 1
 }
 
-VAR_1=$1
-VAR_2=$2
-VAR_3=$3
-VAR_4=$4
+# Note: order input arguments in the order in which they appear in the commands
+var1=$1
+var2=$2
+var3=$3
+var4=$4
 
-if [ "$#" -ne 4 ]; then
+# Note: make sure this is equal to the number of variables defined above
+NUM_ARGS_EXPECTED=4
+if [ "$#" -ne $NUM_ARGS_EXPECTED ]; then
     print_usage_and_exit "Illegal number of parameters"
 fi
+
+# command ...

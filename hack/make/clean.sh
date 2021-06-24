@@ -3,7 +3,7 @@ source hack/make/_script-tools.sh
 
 function print_usage_and_exit() {
     red "Failure: $1"
-    echo "Usage: $0 <var1> <var2> <var3> <var4>"
+    echo "Usage: $0 <out dir> <arch> <binary name>"
     exit 1
 }
 
