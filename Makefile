@@ -178,6 +178,13 @@ push-to-gcr:
 push-to-ecr:
 	./hack/make/push-container.sh $(PREFIX) $(VERSION) $(ECR_ENDPOINT) $(ECR_REPO_PREFIX)
 
+push-to-ecr:
+	@docker tag $(PREFIX)/test-proxy:$(VERSION) ${ECR_ENDPOINT}/${ECR_REPO_PREFIX}/test-proxy:${VERSION}
+	@docker push ${ECR_ENDPOINT}/${ECR_REPO_PREFIX}/test-proxy:${VERSION}
+
+	@docker tag $(PREFIX)/wavefront-kubernetes-collector:$(VERSION) ${ECR_ENDPOINT}/${ECR_REPO_PREFIX}/wavefront-kubernetes-collector:${VERSION}
+	@docker push ${ECR_ENDPOINT}/${ECR_REPO_PREFIX}/wavefront-kubernetes-collector:${VERSION}
+
 push-to-kind:
 	@kind load docker-image $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) --name kind
 	@kind load docker-image $(PREFIX)/test-proxy:$(VERSION) --name kind
