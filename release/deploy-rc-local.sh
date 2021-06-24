@@ -9,7 +9,7 @@ NS=wavefront-collector
 ROOT_DIR=$(git rev-parse --show-toplevel)
 TEMP_DIR=$(mktemp -d)
 CURRENT_VERSION=1.4.0
-VERSION=1.4.1-rc1
+VERSION=1.5.0-rc-1
 WF_CLUSTER=nimba
 K8S_CLUSTER=$VERSION-release-test
 
@@ -20,8 +20,14 @@ fi
 
 echo "Temp dir: $TEMP_DIR"
 
-make nuke-kind
-make deploy-targets
+#make nuke-kind
+# TODO: finish this
+make target-gke
+make deploy-test
+
+# TODO: how can we use make-deploy test
+# instead of all this stuff captured in here?
+
 
 cp ${ROOT_DIR}/deploy/kubernetes/*  $TEMP_DIR/.
 
