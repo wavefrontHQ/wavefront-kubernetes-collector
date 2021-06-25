@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 source hack/make/_script-tools.sh
 
-function print_usage_and_exit() {
-    red "Failure: $1"
-    echo "Usage: $0 <prefix> <docker image> <version>"
-    exit 1
-}
-
-PREFIX=$1
-DOCKER_IMAGE=$2
-VERSION=$3
-
-# Note: make sure this is equal to the number of variables defined above
-NUM_ARGS_EXPECTED=3
-if [ "$#" -ne $NUM_ARGS_EXPECTED ]; then
-    print_usage_and_exit "Illegal number of parameters"
+if [[ -z ${PREFIX} ]]; then
+    print_msg_and_exit 'PREFIX required but was empty'
+    #PREFIX=DEFAULT_PREFIX
 fi
+
+if [[ -z ${DOCKER_IMAGE} ]]; then
+    print_msg_and_exit 'DOCKER_IMAGE required but was empty'
+    #DOCKER_IMAGE=DEFAULT_DOCKER_IMAGE
+fi
+
+if [[ -z ${VERSION} ]]; then
+    print_msg_and_exit 'VERSION required but was empty'
+    #VERSION=DEFAULT_VERSION
+fi
+
+# commands ...
 
 docker exec -it kind-control-plane crictl rmi ${PREFIX}/${DOCKER_IMAGE}:${VERSION} || true
 kind load docker-image ${PREFIX}/${DOCKER_IMAGE}:${VERSION} --name kind
