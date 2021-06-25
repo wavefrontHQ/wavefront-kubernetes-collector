@@ -177,8 +177,7 @@ push-to-ecr:
 	@IMAGE_PREFIX=$(PREFIX) IMAGE_VERSION=$(VERSION) REPO_ENDPOINT=$(ECR_ENDPOINT) REPO_PREFIX=$(ECR_REPO_PREFIX) ./hack/make/push-container.sh
 
 push-to-kind:
-	@kind load docker-image $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) --name kind
-	@kind load docker-image $(PREFIX)/test-proxy:$(VERSION) --name kind
+	@PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) VERSION=$(VERSION) ./hack/make/push-to-kind.sh
 
 delete-images-kind:
 	@PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) VERSION=$(VERSION) ./hack/make/delete-images-kind.sh
