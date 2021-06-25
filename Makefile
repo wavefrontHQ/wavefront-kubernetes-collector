@@ -171,10 +171,10 @@ delete-images-gcr:
 	@gcloud container images delete us.gcr.io/$(GCP_PROJECT)/wavefront-kubernetes-collector:$(VERSION) --quiet || true
 
 push-to-gcr:
-	./hack/make/push-container.sh $(PREFIX) $(VERSION) us.gcr.io $(GCP_PROJECT)
+	@IMAGE_PREFIX=$(PREFIX) IMAGE_VERSION=$(VERSION) REPO_ENDPOINT='us.gcr.io' REPO_PREFIX=$(GCP_PROJECT) ./hack/make/push-container.sh
 
 push-to-ecr:
-	./hack/make/push-container.sh $(PREFIX) $(VERSION) $(ECR_ENDPOINT) $(ECR_REPO_PREFIX)
+	@IMAGE_PREFIX=$(PREFIX) IMAGE_VERSION=$(VERSION) REPO_ENDPOINT=$(ECR_ENDPOINT) REPO_PREFIX=$(ECR_REPO_PREFIX) ./hack/make/push-container.sh
 
 push-to-kind:
 	@kind load docker-image $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) --name kind
