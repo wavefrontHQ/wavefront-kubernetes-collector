@@ -110,43 +110,41 @@ ifneq ($(OVERRIDE_IMAGE_NAME),)
 endif
 
 clean:
-	@./hack/make/clean.sh $(OUT_DIR) $(ARCH) $(BINARY_NAME)
+	@OUT_DIR=$(OUT_DIR) ARCH=$(ARCH) BINARY_NAME=$(BINARY_NAME) ./hack/make/clean.sh
 
 deploy-targets:
-	@(cd $(DEPLOY_DIR) && ./deploy-targets.sh)
+	@DEPLOY_DIR=$(DEPLOY_DIR) ./hack/make/deploy-targets.sh
 
 clean-targets:
-	@(cd $(DEPLOY_DIR) && ./uninstall-targets.sh)
+	@DEPLOY_DIR=$(DEPLOY_DIR) ./hack/make/clean-targets.sh
 
 token-check:
-	@if [ -z ${WAVEFRONT_TOKEN} ]; then echo "Need to set WAVEFRONT_TOKEN" && exit 1; fi
+	@./hack/make/token-check.sh
 
 k9s:
 	watch -n 1 k9s
 
 clean-deployment:
-	@(cd $(DEPLOY_DIR) && ./uninstall-wavefront-helm-release.sh)
-	@(cd $(KUSTOMIZE_DIR) && ./clean-deploy.sh)
+	@DEPLOY_DIR=$(DEPLOY_DIR) KUSTOMIZE_DIR=$(KUSTOMIZE_DIR) ./hack/make/clean-deployment.sh
 
 k8s-env:
-	@echo "\033[92mK8s Environment: $(shell kubectl config current-context)\033[0m"
+	@./hack/make/k8s-env.sh
 
 clean-cluster: clean-targets clean-deployment
 
 nuke-kind:
-	kind delete cluster
-	kind create cluster
+	@./hack/make/nuke-kind.sh
 
+# TODO: I propose this be 'target-kind'
 kind-connect-to-cluster:
-	kubectl config use kind-kind
+	@./hack/make/kind-connect-to-cluster.sh
 
 target-gke:
-	gcloud config set project $(GCP_PROJECT)
-	gcloud auth configure-docker --quiet
+	@GCP_PROJECT=$(GCP_PROJECT) ./hack/make/target-gke.sh
 
 target-eks:
 	aws eks --region $(AWS_REGION) update-kubeconfig --name k8s-saas-team-dev --profile $(AWS_PROFILE)
-	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_ENDPOINT)
+	aws ecr get-login-password --region $(AWS_REGION) | sudo docker login --username AWS --password-stdin $(ECR_ENDPOINT)
 
 gke-cluster-name-check:
 	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) ./hack/make/gke-cluster-name-check.sh

@@ -3,7 +3,7 @@ source hack/make/_script-tools.sh
 
 if [[ -z ${GKE_CLUSTER_NAME} ]]; then
   print_msg_and_exit 'GKE_CLUSTER_NAME required but was empty'
-  #GKE_CLUSTER_NAME=DEFAULT_GKE_CLUSTER_NAME
+  #GKE_CLUSTER_NAME=$DEFAULT_GKE_CLUSTER_NAME
 fi
 
 # commands ...
