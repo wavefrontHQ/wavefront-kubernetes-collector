@@ -149,22 +149,16 @@ target-eks:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_ENDPOINT)
 
 gke-cluster-name-check:
-	@if [ -z ${GKE_CLUSTER_NAME} ]; then echo "Need to set GKE_CLUSTER_NAME" && exit 1; fi
+	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) ./hack/make/gke-cluster-name-check.sh
 
 gke-connect-to-cluster: gke-cluster-name-check
-	gcloud container clusters get-credentials $(GKE_CLUSTER_NAME) --zone us-central1-c --project $(GCP_PROJECT)
+	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) GCP_PROJECT=$(GCP_PROJECT) ./hack/make/gke-connect-to-cluster.sh
 
 delete-gke-cluster: gke-cluster-name-check target-gke
-	echo "Deleting GKE K8s Cluster: $(GKE_CLUSTER_NAME)"
-	gcloud container clusters delete $(GKE_CLUSTER_NAME) --region=us-central1-c --quiet
+	./hack/make/delete-gke-cluster.sh
 
 create-gke-cluster: gke-cluster-name-check target-gke
-	echo "Creating GKE K8s Cluster: $(GKE_CLUSTER_NAME)"
-	gcloud container clusters create $(GKE_CLUSTER_NAME) --machine-type=e2-standard-2 --region=us-central1-c --enable-ip-alias --create-subnetwork range=/21
-	gcloud container clusters get-credentials $(GKE_CLUSTER_NAME) --zone us-central1-c --project $(GCP_PROJECT)
-	kubectl create clusterrolebinding --clusterrole cluster-admin \
-		--user $$(gcloud auth list --filter=status:ACTIVE --format="value(account)") \
-		clusterrolebinding
+	GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) GCP_PROJECT=$(GCP_PROJECT) ./hack/make/create-gke-cluster.sh
 
 delete-images-gcr:
 	@GCP_PROJECT=$(GCP_PROJECT) VERSION=$(VERSION) ./hack/make/delete-images-gcr.sh
