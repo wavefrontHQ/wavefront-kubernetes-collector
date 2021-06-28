@@ -155,7 +155,7 @@ gke-connect-to-cluster: gke-cluster-name-check
 	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) GCP_PROJECT=$(GCP_PROJECT) ./hack/make/gke-connect-to-cluster.sh
 
 delete-gke-cluster: gke-cluster-name-check target-gke
-	./hack/make/delete-gke-cluster.sh
+	GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) ./hack/make/delete-gke-cluster.sh
 
 create-gke-cluster: gke-cluster-name-check target-gke
 	GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) GCP_PROJECT=$(GCP_PROJECT) ./hack/make/create-gke-cluster.sh
