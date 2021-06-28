@@ -21,4 +21,9 @@ if [[ -z ${VAR4} ]]; then
     #VAR4=DEFAULT_VAR4
 fi
 
+# TODO: delete the following lines when you have verified all script inputs;
+# that's basically the TDD for these scripts
+green 'All variables verified! Exiting.'
+exit 0
+
 # commands ...
