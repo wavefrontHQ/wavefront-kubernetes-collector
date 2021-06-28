@@ -1,29 +1,28 @@
 #!/usr/bin/env bash
 source hack/make/_script-tools.sh
 
-if [[ -z ${VAR1} ]]; then
-    print_msg_and_exit 'VAR1 required but was empty'
-    #VAR1=$DEFAULT_VAR1
+if [[ -z ${LDFLAGS} ]]; then
+    print_msg_and_exit 'LDFLAGS required but was empty'
+    #LDFLAGS=$DEFAULT_LDFLAGS
 fi
 
-if [[ -z ${VAR2} ]]; then
-    print_msg_and_exit 'VAR2 required but was empty'
-    #VAR2=$DEFAULT_VAR2
+if [[ -z ${REPO_DIR} ]]; then
+    print_msg_and_exit 'REPO_DIR required but was empty'
+    #REPO_DIR=$DEFAULT_REPO_DIR
 fi
 
-if [[ -z ${VAR3} ]]; then
-    print_msg_and_exit 'VAR3 required but was empty'
-    #VAR3=$DEFAULT_VAR3
+if [[ -z ${PREFIX} ]]; then
+    print_msg_and_exit 'PREFIX required but was empty'
+    #PREFIX=$DEFAULT_PREFIX
 fi
 
-if [[ -z ${VAR4} ]]; then
-    print_msg_and_exit 'VAR4 required but was empty'
-    #VAR4=$DEFAULT_VAR4
+if [[ -z ${VERSION} ]]; then
+    print_msg_and_exit 'VERSION required but was empty'
+    #VERSION=$DEFAULT_VERSION
 fi
-
-# TODO: delete the following lines when you have verified all script inputs;
-# that's basically the TDD for these scripts
-green 'All variables verified! Exiting.'
-exit 0
 
 # commands ...
+docker build \
+	--build-arg BINARY_NAME=test-proxy --build-arg LDFLAGS="${LDFLAGS}" \
+	--pull -f ${REPO_DIR}/Dockerfile.test-proxy \
+	-t ${PREFIX}/test-proxy:${VERSION} .

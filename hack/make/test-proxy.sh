@@ -1,29 +1,20 @@
 #!/usr/bin/env bash
 source hack/make/_script-tools.sh
 
-if [[ -z ${VAR1} ]]; then
-    print_msg_and_exit 'VAR1 required but was empty'
-    #VAR1=$DEFAULT_VAR1
+if [[ -z ${ARCH} ]]; then
+  print_msg_and_exit 'ARCH required but was empty'
+  #ARCH=$DEFAULT_ARCH
 fi
 
-if [[ -z ${VAR2} ]]; then
-    print_msg_and_exit 'VAR2 required but was empty'
-    #VAR2=$DEFAULT_VAR2
+if [[ -z ${LDFLAGS} ]]; then
+  print_msg_and_exit 'LDFLAGS required but was empty'
+  #LDFLAGS=$DEFAULT_LDFLAGS
 fi
 
-if [[ -z ${VAR3} ]]; then
-    print_msg_and_exit 'VAR3 required but was empty'
-    #VAR3=$DEFAULT_VAR3
+if [[ -z ${OUT_DIR} ]]; then
+  print_msg_and_exit 'OUT_DIR required but was empty'
+  #OUT_DIR=$DEFAULT_OUT_DIR
 fi
-
-if [[ -z ${VAR4} ]]; then
-    print_msg_and_exit 'VAR4 required but was empty'
-    #VAR4=$DEFAULT_VAR4
-fi
-
-# TODO: delete the following lines when you have verified all script inputs;
-# that's basically the TDD for these scripts
-green 'All variables verified! Exiting.'
-exit 0
 
 # commands ...
+GOARCH=${ARCH} CGO_ENABLED=0 go build -ldflags "${LDFLAGS}" -o ${OUT_DIR}/${ARCH}/test-proxy ./cmd/test-proxy/...
