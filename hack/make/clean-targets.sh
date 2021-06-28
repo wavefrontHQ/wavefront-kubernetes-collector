@@ -7,6 +7,6 @@ if [[ -z ${DEPLOY_DIR} ]]; then
 fi
 
 # commands ...
-pushd ${DEPLOY_DIR} || print_msg_and_exit "'pushd ${DEPLOY_DIR}' failed"
+pushd_check ${DEPLOY_DIR}
 ./uninstall-targets.sh
-popd || print_msg_and_exit "'popd ${DEPLOY_DIR}' failed"
+popd_check ${DEPLOY_DIR}

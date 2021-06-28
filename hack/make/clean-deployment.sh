@@ -12,10 +12,10 @@ if [[ -z ${KUSTOMIZE_DIR} ]]; then
 fi
 
 # commands ...
-pushd ${DEPLOY_DIR} || print_msg_and_exit "'pushd ${DEPLOY_DIR}' failed"
+pushd_check ${DEPLOY_DIR}
 ./uninstall-wavefront-helm-release.sh
-popd || print_msg_and_exit "'popd ${DEPLOY_DIR}' failed"
+popd_check ${DEPLOY_DIR}
 
-pushd ${KUSTOMIZE_DIR} || print_msg_and_exit "'pushd ${KUSTOMIZE_DIR}' failed"
+pushd_check ${KUSTOMIZE_DIR}
 ./clean-deploy.sh
-popd || print_msg_and_exit "'popd ${KUSTOMIZE_DIR}' failed"
+popd_check ${KUSTOMIZE_DIR}

@@ -27,12 +27,10 @@ if [[ -z ${GCP_PROJECT} ]]; then
 fi
 
 # commands ...
+pushd_check ${KUSTOMIZE_DIR}
 if [ ${K8S_ENV} == "GKE" ]; then
-  pushd ${KUSTOMIZE_DIR} || print_msg_and_exit "'pushd ${KUSTOMIZE_DIR}' failed"
   ./test.sh nimba ${WAVEFRONT_TOKEN} ${VERSION} "us.gcr.io\/${GCP_PROJECT}"
-  popd || print_msg_and_exit "'popd ${KUSTOMIZE_DIR}' failed"
 else
-  pushd ${KUSTOMIZE_DIR} || print_msg_and_exit "'pushd ${KUSTOMIZE_DIR}' failed"
   ./test.sh nimba ${WAVEFRONT_TOKEN} ${VERSION}
-  popd || print_msg_and_exit "'popd ${KUSTOMIZE_DIR}' failed"
 fi
+popd_check ${KUSTOMIZE_DIR}

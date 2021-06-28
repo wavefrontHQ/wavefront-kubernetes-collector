@@ -16,7 +16,7 @@ fi
 # shellcheck disable=SC2046
 if [ ! $(command -v peg) ]; then
   red "peg not found; I shall go acquire it!"
-  pushd ${REPO_DIR} || print_msg_and_exit "'pushd ${REPO_DIR}' failed"
+  pushd_check ${REPO_DIR}
   GOARCH=${ARCH} CGO_ENABLED=0 go get -u github.com/pointlander/peg
-  popd || print_msg_and_exit "'popd ${REPO_DIR}' failed"
+  popd_check ${REPO_DIR}
 fi
