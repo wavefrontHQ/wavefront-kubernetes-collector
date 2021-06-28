@@ -42,51 +42,28 @@ fmt:
 	@./hack/make/fmt.sh
 
 tests:
-	./hack/make/tests.sh
-	go clean -testcache
-	go test -timeout 30s -race ./...
+	@./hack/make/tests.sh
 
 build: clean fmt vet
-	./hack/make/build.sh
-	GOARCH=$(ARCH) CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(OUT_DIR)/$(ARCH)/$(BINARY_NAME) ./cmd/wavefront-collector/
+	ARCH=$(ARCH) LDFLAGS="$(LDFLAGS)" OUT_DIR=$(OUT_DIR) BINARY_NAME=$(BINARY_NAME) ./hack/make/build.sh
 
 vet:
 	@./hack/make/vet.sh
 
 # test driver for local development
 driver: clean fmt
-	./hack/make/driver.sh
-	GOARCH=$(ARCH) CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(OUT_DIR)/$(ARCH)/$(BINARY_NAME)-test ./cmd/test-driver/
+	ARCH=$(ARCH) LDFLAGS="$(LDFLAGS)" OUT_DIR=$(OUT_DIR) BINARY_NAME=$(BINARY_NAME) ./hack/make/driver.sh
 
 containers: container test-proxy-container
 
 container:
-	./hack/make/container.sh
-	# Run build in a container in order to have reproducible builds
-	docker build \
-	--build-arg BINARY_NAME=$(BINARY_NAME) --build-arg LDFLAGS="$(LDFLAGS)" \
-	--pull -t $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) .
-ifneq ($(OVERRIDE_IMAGE_NAME),)
-	docker tag $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) $(OVERRIDE_IMAGE_NAME)
-endif
+	@BINARY_NAME=$(BINARY_NAME) LDFLAGS="$(LDFLAGS)" PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) VERSION=$(VERSION) OVERRIDE_IMAGE_NAME=$(OVERRIDE_IMAGE_NAME) ./hack/make/container.sh
 
 github-release:
-	./hack/make/github-release.sh
-	curl -X POST -H "Content-Type:application/json" -H "Authorization: token $(GITHUB_TOKEN)" \
-		-d '{"tag_name":"v$(VERSION)", "target_commitish":"$(GIT_BRANCH)", "name":"Release v$(VERSION)", "body": "Description for v$(VERSION)", "draft": true, "prerelease": false}' "https://api.github.com/repos/$(GIT_HUB_REPO)/releases"
+	@GITHUB_TOKEN=$(GITHUB_TOKEN) VERSION=$(VERSION) GIT_BRANCH=$(GIT_BRANCH) GIT_HUB_REPO=$(GIT_HUB_REPO) ./hack/make/github-release.sh
 
 release:
-	./hack/make/release.sh
-	docker buildx create --use --node wavefront_collector_builder
-ifeq ($(RELEASE_TYPE), release)
-	docker buildx build --platform linux/amd64,linux/arm64 --push \
-	--build-arg BINARY_NAME=$(BINARY_NAME) --build-arg LDFLAGS="$(LDFLAGS)" \
-	--pull -t $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) -t $(PREFIX)/$(DOCKER_IMAGE):latest .
-else
-	docker buildx build --platform linux/amd64,linux/arm64 --push \
-	--build-arg BINARY_NAME=$(BINARY_NAME) --build-arg LDFLAGS="$(LDFLAGS)" \
-	--pull -t $(PREFIX)/$(DOCKER_IMAGE):$(VERSION)-rc-$(RC_NUMBER) .
-endif
+	@BINARY_NAME=$(BINARY_NAME) LDFLAGS="$(LDFLAGS)" PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) VERSION=$(VERSION) RC_NUMBER=$(RC_NUMBER) ./hack/make/release.sh
 
 test-proxy-container:
 	@LDFLAGS="$(LDFLAGS)" REPO_DIR=$(REPO_DIR) PREFIX=$(PREFIX) VERSION=$(VERSION) ./hack/make/test-proxy-container.sh

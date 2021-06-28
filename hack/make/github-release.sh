@@ -1,29 +1,26 @@
 #!/usr/bin/env bash
 source hack/make/_script-tools.sh
 
-if [[ -z ${VAR1} ]]; then
-    print_msg_and_exit 'VAR1 required but was empty'
-    #VAR1=$DEFAULT_VAR1
+if [[ -z ${GITHUB_TOKEN} ]]; then
+  print_msg_and_exit 'GITHUB_TOKEN required but was empty'
+  #GITHUB_TOKEN=$DEFAULT_GITHUB_TOKEN
 fi
 
-if [[ -z ${VAR2} ]]; then
-    print_msg_and_exit 'VAR2 required but was empty'
-    #VAR2=$DEFAULT_VAR2
+if [[ -z ${VERSION} ]]; then
+  print_msg_and_exit 'VERSION required but was empty'
+  #VERSION=$DEFAULT_VERSION
 fi
 
-if [[ -z ${VAR3} ]]; then
-    print_msg_and_exit 'VAR3 required but was empty'
-    #VAR3=$DEFAULT_VAR3
+if [[ -z ${GIT_BRANCH} ]]; then
+  print_msg_and_exit 'GIT_BRANCH required but was empty'
+  #GIT_BRANCH=$DEFAULT_GIT_BRANCH
 fi
 
-if [[ -z ${VAR4} ]]; then
-    print_msg_and_exit 'VAR4 required but was empty'
-    #VAR4=$DEFAULT_VAR4
+if [[ -z ${GIT_HUB_REPO} ]]; then
+  print_msg_and_exit 'GIT_HUB_REPO required but was empty'
+  #GIT_HUB_REPO=$DEFAULT_GIT_HUB_REPO
 fi
-
-# TODO: delete the following lines when you have verified all script inputs;
-# that's basically the TDD for these scripts
-green 'All variables verified! Exiting.'
-exit 0
 
 # commands ...
+curl -X POST -H "Content-Type:application/json" -H "Authorization: token ${GITHUB_TOKEN}" \
+  -d "{\"tag_name\":\"v${VERSION}\", \"target_commitish\":\"${GIT_BRANCH}\", \"name\":\"Release v${VERSION}\", \"body\": \"Description for v${VERSION}\", \"draft\": true, \"prerelease\": false}" "https://api.github.com/repos/${GIT_HUB_REPO}/releases"
