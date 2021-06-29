@@ -45,14 +45,14 @@ tests:
 	@./hack/make/tests.sh
 
 build: clean fmt vet
-	ARCH=$(ARCH) LDFLAGS="$(LDFLAGS)" OUT_DIR=$(OUT_DIR) BINARY_NAME=$(BINARY_NAME) ./hack/make/build.sh
+	@ARCH=$(ARCH) LDFLAGS="$(LDFLAGS)" OUT_DIR=$(OUT_DIR) BINARY_NAME=$(BINARY_NAME) ./hack/make/build.sh
 
 vet:
 	@./hack/make/vet.sh
 
 # test driver for local development
 driver: clean fmt
-	ARCH=$(ARCH) LDFLAGS="$(LDFLAGS)" OUT_DIR=$(OUT_DIR) BINARY_NAME=$(BINARY_NAME) ./hack/make/driver.sh
+	@ARCH=$(ARCH) LDFLAGS="$(LDFLAGS)" OUT_DIR=$(OUT_DIR) BINARY_NAME=$(BINARY_NAME) ./hack/make/driver.sh
 
 containers: container test-proxy-container
 
@@ -115,8 +115,7 @@ target-gke:
 	@GCP_PROJECT=$(GCP_PROJECT) ./hack/make/target-gke.sh
 
 target-eks:
-	aws eks --region $(AWS_REGION) update-kubeconfig --name k8s-saas-team-dev --profile $(AWS_PROFILE)
-	aws ecr get-login-password --region $(AWS_REGION) | sudo docker login --username AWS --password-stdin $(ECR_ENDPOINT)
+	@AWS_PROFILE=$(AWS_PROFILE) AWS_REGION=$(AWS_REGION) ECR_ENDPOINT=$(ECR_ENDPOINT) ./hack/make/target-eks.sh
 
 gke-cluster-name-check:
 	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) ./hack/make/gke-cluster-name-check.sh
@@ -125,10 +124,10 @@ gke-connect-to-cluster: gke-cluster-name-check
 	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) GCP_PROJECT=$(GCP_PROJECT) ./hack/make/gke-connect-to-cluster.sh
 
 delete-gke-cluster: gke-cluster-name-check target-gke
-	GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) ./hack/make/delete-gke-cluster.sh
+	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) ./hack/make/delete-gke-cluster.sh
 
 create-gke-cluster: gke-cluster-name-check target-gke
-	GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) GCP_PROJECT=$(GCP_PROJECT) ./hack/make/create-gke-cluster.sh
+	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) GCP_PROJECT=$(GCP_PROJECT) ./hack/make/create-gke-cluster.sh
 
 delete-images-gcr:
 	@GCP_PROJECT=$(GCP_PROJECT) VERSION=$(VERSION) ./hack/make/delete-images-gcr.sh
@@ -146,7 +145,7 @@ delete-images-kind:
 	@PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) VERSION=$(VERSION) ./hack/make/delete-images-kind.sh
 
 push-images:
-	K8S_ENV=$(K8S_ENV) PREFIX=$(PREFIX) VERSION=$(VERSION) GCP_PROJECT=$(GCP_PROJECT) DOCKER_IMAGE=$(DOCKER_IMAGE) ./hack/make/push-images.sh
+	@K8S_ENV=$(K8S_ENV) PREFIX=$(PREFIX) VERSION=$(VERSION) GCP_PROJECT=$(GCP_PROJECT) DOCKER_IMAGE=$(DOCKER_IMAGE) ./hack/make/push-images.sh
 
 delete-images:
 	@K8S_ENV=$(K8S_ENV) GCP_PROJECT=$(GCP_PROJECT) VERSION=$(VERSION) PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) ./hack/make/delete-images.sh
