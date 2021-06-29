@@ -76,6 +76,8 @@ func main() {
 	log.Infof("wavefront-collector version %v", version)
 	enableProfiling(opt.EnableProfiling)
 	enableForcedGC(opt.ForceGC)
+	// TODO: use events 2.0 code when this is false
+	//enableLegacyEvents(opt.UseLegacyEvents)
 
 	preRegister(opt)
 	cfg := loadConfigOrDie(opt.ConfigFile)

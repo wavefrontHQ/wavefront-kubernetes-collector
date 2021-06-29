@@ -16,6 +16,7 @@ import (
 	gometrics "github.com/rcrowley/go-metrics"
 	log "github.com/sirupsen/logrus"
 
+	// Pull in both v1 and v2 for v2 events?
 	"k8s.io/api/core/v1"
 
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"

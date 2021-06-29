@@ -19,6 +19,7 @@ type CollectorRunOptions struct {
 	ConfigFile      string
 	LogLevel        string
 	MaxProcs        int
+	UseLegacyEvents bool
 
 	// An experimental flag for forcing a garbage collection and releasing memory.
 	// See https://utcc.utoronto.ca/~cks/space/blog/programming/GoNoMemoryFreeing for reference.
@@ -54,6 +55,7 @@ func (opts *CollectorRunOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&opts.LogLevel, "log_level", "info", "one of info, debug or trace")
 	fs.IntVar(&opts.MaxProcs, "max_procs", 0, "max number of CPUs that can be used simultaneously. Less than 1 for default (number of cores)")
 	fs.BoolVar(&opts.ForceGC, "force_gc", false, "experimental flag that periodically forces the release of unused memory")
+	fs.BoolVar(&opts.UseLegacyEvents, "use_legacy_events", true, "use legacy Events framework (1.0) instead of new 2.0")
 
 	// deprecated flags
 	fs.DurationVar(&opts.MetricResolution, "metric_resolution", 60*time.Second, "The resolution at which the collector will collect metrics")
