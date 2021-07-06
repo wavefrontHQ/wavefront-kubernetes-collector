@@ -39,20 +39,21 @@ LDFLAGS=-w -X main.version=$(VERSION) -X main.commit=$(GIT_COMMIT)
 all: container
 
 fmt:
-	@./hack/make/fmt.sh
+	find . -type f -name "*.go" | grep -v "./vendor*" | xargs gofmt -s -w
 
 tests:
-	@./hack/make/tests.sh
+	go clean -testcache
+	go test -timeout 30s -race ./...
 
 build: clean fmt vet
-	@ARCH=$(ARCH) LDFLAGS="$(LDFLAGS)" OUT_DIR=$(OUT_DIR) BINARY_NAME=$(BINARY_NAME) ./hack/make/build.sh
+	GOARCH=$(ARCH) CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(OUT_DIR)/$(ARCH)/$(BINARY_NAME) ./cmd/wavefront-collector/
 
 vet:
-	@./hack/make/vet.sh
+	go vet -composites=false ./...
 
 # test driver for local development
 driver: clean fmt
-	@ARCH=$(ARCH) LDFLAGS="$(LDFLAGS)" OUT_DIR=$(OUT_DIR) BINARY_NAME=$(BINARY_NAME) ./hack/make/driver.sh
+	GOARCH=$(ARCH) CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(OUT_DIR)/$(ARCH)/$(BINARY_NAME)-test ./cmd/test-driver/
 
 containers: container test-proxy-container
 
@@ -69,10 +70,11 @@ test-proxy-container:
 	@LDFLAGS="$(LDFLAGS)" REPO_DIR=$(REPO_DIR) PREFIX=$(PREFIX) VERSION=$(VERSION) ./hack/make/test-proxy-container.sh
 
 test-proxy: peg $(REPO_DIR)/cmd/test-proxy/metric_grammar.peg.go clean fmt vet
-	@ARCH=$(ARCH) LDFLAGS="$(LDFLAGS)" OUT_DIR=$(OUT_DIR) ./hack/make/test-proxy.sh
+	GOARCH=$(ARCH) CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(OUT_DIR)/$(ARCH)/test-proxy ./cmd/test-proxy/...
 
 peg:
-	@REPO_DIR=$(REPO_DIR) ARCH=$(ARCH) ./hack/make/peg.sh
+	@which peg > /dev/null || \
+		(cd $(REPO_DIR)/..; GOARCH=$(ARCH) CGO_ENABLED=0 go get -u github.com/pointlander/peg)
 
 %.peg.go: %.peg
 	peg -switch -inline $<
@@ -82,16 +84,18 @@ container_rhel: build
 	@OUT_DIR=$(OUT_DIR) ARCH=$(ARCH) BINARY_NAME=$(BINARY_NAME) TEMP_DIR=$(TEMP_DIR) PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) VERSION=$(VERSION) OVERRIDE_IMAGE_NAME=$(OVERRIDE_IMAGE_NAME) ./hack/make/container_rhel.sh
 
 clean:
-	@OUT_DIR=$(OUT_DIR) ARCH=$(ARCH) BINARY_NAME=$(BINARY_NAME) ./hack/make/clean.sh
+	@rm -f $(OUT_DIR)/$(ARCH)/$(BINARY_NAME)
+	@rm -f $(OUT_DIR)/$(ARCH)/$(BINARY_NAME)-test
+	@rm -f $(OUT_DIR)/$(ARCH)/test-proxy
 
 deploy-targets:
-	@DEPLOY_DIR=$(DEPLOY_DIR) ./hack/make/deploy-targets.sh
+	@(cd $(DEPLOY_DIR) && ./deploy-targets.sh)
 
 clean-targets:
-	@DEPLOY_DIR=$(DEPLOY_DIR) ./hack/make/clean-targets.sh
+	@(cd $(DEPLOY_DIR) && ./uninstall-targets.sh)
 
 token-check:
-	@./hack/make/token-check.sh
+	@if [ -z ${WAVEFRONT_TOKEN} ]; then echo "Need to set WAVEFRONT_TOKEN" && exit 1; fi
 
 k9s:
 	watch -n 1 k9s
@@ -105,20 +109,25 @@ k8s-env:
 clean-cluster: clean-targets clean-deployment
 
 nuke-kind:
-	@./hack/make/nuke-kind.sh
+	kind delete cluster
+	kind create cluster
 
 # TODO: I propose this be 'target-kind'
 kind-connect-to-cluster:
-	@./hack/make/kind-connect-to-cluster.sh
+	kubectl config use kind-kind
 
 target-gke:
-	@GCP_PROJECT=$(GCP_PROJECT) ./hack/make/target-gke.sh
+	gcloud config set project $(GCP_PROJECT)
+	gcloud auth configure-docker --quiet
 
 target-eks:
-	@AWS_PROFILE=$(AWS_PROFILE) AWS_REGION=$(AWS_REGION) ECR_ENDPOINT=$(ECR_ENDPOINT) ./hack/make/target-eks.sh
+	export AWS_PROFILE=$(AWS_PROFILE) # TODO: doesn't work
+	aws sts get-caller-identity
+	aws eks --region $(AWS_REGION) update-kubeconfig --name k8s-saas-team-dev --profile $(AWS_PROFILE)
+	aws ecr get-login-password --region $(AWS_REGION) | sudo docker login --username AWS --password-stdin $(ECR_ENDPOINT)
 
 gke-cluster-name-check:
-	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) ./hack/make/gke-cluster-name-check.sh
+	@if [ -z ${GKE_CLUSTER_NAME} ]; then echo "Need to set GKE_CLUSTER_NAME" && exit 1; fi
 
 gke-connect-to-cluster: gke-cluster-name-check
 	@GKE_CLUSTER_NAME=$(GKE_CLUSTER_NAME) GCP_PROJECT=$(GCP_PROJECT) ./hack/make/gke-connect-to-cluster.sh
@@ -139,13 +148,19 @@ push-to-ecr:
 	@IMAGE_PREFIX=$(PREFIX) IMAGE_VERSION=$(VERSION) REPO_ENDPOINT=$(ECR_ENDPOINT) REPO_PREFIX=$(ECR_REPO_PREFIX) ./hack/make/push-container.sh
 
 push-to-kind:
-	@PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) VERSION=$(VERSION) ./hack/make/push-to-kind.sh
+	@kind load docker-image $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) --name kind
+	@kind load docker-image $(PREFIX)/test-proxy:$(VERSION) --name kind
 
 delete-images-kind:
-	@PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) VERSION=$(VERSION) ./hack/make/delete-images-kind.sh
+	@docker exec -it kind-control-plane crictl rmi $(PREFIX)/$(DOCKER_IMAGE):$(VERSION) || true
+	@docker exec -it kind-control-plane crictl rmi $(PREFIX)/test-proxy:$(VERSION) || true
 
 push-images:
-	@K8S_ENV=$(K8S_ENV) PREFIX=$(PREFIX) VERSION=$(VERSION) GCP_PROJECT=$(GCP_PROJECT) DOCKER_IMAGE=$(DOCKER_IMAGE) ./hack/make/push-images.sh
+ifeq ($(K8S_ENV), GKE)
+	make push-to-gcr
+else
+	make push-to-kind
+endif
 
 delete-images:
 	@K8S_ENV=$(K8S_ENV) GCP_PROJECT=$(GCP_PROJECT) VERSION=$(VERSION) PREFIX=$(PREFIX) DOCKER_IMAGE=$(DOCKER_IMAGE) ./hack/make/delete-images.sh
