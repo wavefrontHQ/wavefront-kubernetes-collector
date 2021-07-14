@@ -1,5 +1,19 @@
 language: go
 
+before_install:
+  - openssl aes-256-cbc -K $encrypted_ad13726c9b2f_key -iv $encrypted_ad13726c9b2f_iv -in travis.tar.gz.enc -out travis.tar.gz -d
+  - if [ ! -d ${HOME}/google-cloud-sdk ]; then
+    curl https://sdk.cloud.google.com | bash;
+    fi
+  - tar -xzf travis.tar.gz
+  - gcloud auth activate-service-account --key-file wavefront-gcp-dev-bc34048ac422.json
+
+install:
+  - gcloud config set project wavefront-gcp-dev
+  - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+  - chmod +x ./kubectl
+  - sudo mv ./kubectl /usr/local/bin/kubectl
+
 # safelist
 branches:
   only:
@@ -29,6 +43,8 @@ notifications:
 
 # script always run to completion (set +e).
 script:
+  - GKE_CLUSTER_NAME=k8s-saas-travis-ci make gke-connect-to-cluster
+  - kubectl cluster-info
   - diff -u <(echo -n) <(goimports -d $(find . -type f -name '*.go' -not -path "./vendor/*"))
   - go test -v -race ./...                   # Run all the tests with the race detector enabled
   - go vet -composites=false ./...           # go vet is the official Go static analyzer

@@ -4,3 +4,5 @@ _output
 osstp_golang.yml
 hack/kustomize/base/kustomization.yaml
 callgrind.out*
+travis.tar.gz
+!travis.tar.gz.enc
